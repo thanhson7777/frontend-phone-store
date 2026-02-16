@@ -1,34 +1,35 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Routes, Route } from 'react-router-dom'
+import Auth from '~/page/Auth/Auth'
+import AccountVerifycation from '~/page/Auth/VerifyAccount'
+
+import MainLayout from '~/components/MainLayout/MainLayout'
+import HomePage from '~/page/HomePage'
+import ProductDetail from './components/Product/ProductDetail'
+import CategoryProducts from './components/Category/CategoryProducts'
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <Routes>
+
+      {/* NHỮNG TRANG CÓ HEADER & FOOTER SẼ NẰM TRONG MAINLAYOUT */}
+      <Route element={<MainLayout />}>
+        {/* Đường dẫn '/' sẽ load MainLayout, sau đó nhét HomePage vào chỗ <Outlet /> */}
+        <Route path="/" element={<HomePage />} />
+        <Route path="/product/:productId" element={<ProductDetail />} />
+        <Route path="/category/:categoryId" element={<CategoryProducts />} />
+
+      </Route>
+
+
+      {/* NHỮNG TRANG ĐỘC LẬP (KHÔNG CÓ HEADER/FOOTER) SẼ NẰM NGOÀI */}
+      <Route path="/login" element={<Auth />} />
+      <Route path="/register" element={<Auth />} />
+      <Route path="/account/verification" element={<AccountVerifycation />} />
+
+      {/* Tuyến đường bắt lỗi 404 */}
+      <Route path="*" element={<h1>404 - Không tìm thấy trang này fen ơi!</h1>} />
+
+    </Routes>
   )
 }
 
