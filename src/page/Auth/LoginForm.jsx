@@ -22,7 +22,7 @@ import {
   PASSWORD_RULE_MESSAGE
 } from '~/utils/validators'
 import FieldErrorAlert from '~/components/Form/FieldErrorAlert'
-import { useSearchParams, useNavigate } from 'react-router-dom'
+import { useSearchParams, useNavigate, useLocation } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 import { loginUserAPI } from '~/redux/user/userSlice'
 import { toast } from 'react-toastify'
@@ -31,6 +31,9 @@ function LoginForm() {
   const dispatch = useDispatch()
   const navigate = useNavigate()
   const theme = useTheme()
+  const location = useLocation()
+
+  const from = location.state?.from || '/'
 
   let [searchParams] = useSearchParams()
   const registeredEmail = searchParams.get('registeredEmail')
@@ -45,6 +48,7 @@ function LoginForm() {
       { pending: 'Đang đăng nhập...' }
     ).then(res => {
       if (!res.error) navigate('/')
+      navigate(from, { replace: true })
     })
   }
 

@@ -23,6 +23,15 @@ authorizeAxiosInstance.defaults.withCredentials = true
 authorizeAxiosInstance.interceptors.request.use((config) => {
   // Kĩ thuật chặn spam click
   interceptorLoadingElement(true)
+  // Kĩ thuật chặn spam click
+  interceptorLoadingElement(true)
+
+  const accessToken = localStorage.getItem('accessToken')
+
+  // Nếu có Token thì nhét vào Header
+  if (accessToken) {
+    config.headers.Authorization = `Bearer ${accessToken}`
+  }
   return config
 }, function (error) {
   return Promise.reject(error)

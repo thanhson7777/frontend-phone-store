@@ -1,5 +1,5 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import authorizeAxiosInstance from '~/utils/authorizeAxios'
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { API_ROOT } from '~/utils/constants'
 
 const initialState = {
@@ -22,6 +22,14 @@ export const updateCartsAPI = createAsyncThunk(
   }
 )
 
+export const addToCartAPI = createAsyncThunk(
+  'carts/addToCartAPI',
+  async (data) => {
+    const response = await authorizeAxiosInstance.post(`${API_ROOT}/v1/carts/add`, data)
+    return response.data
+  }
+)
+
 export const cartSlice = createSlice({
   name: 'cart',
   initialState,
@@ -38,10 +46,12 @@ export const cartSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(fetchCartsAPI.fulfilled, (state, action) => {
-      const incomingCart = action.payload
-      state.currentCarts = Array.isArray(incomingCart) ? [...incomingCart].reverse() : []
+      state.currentCarts = action.payload
     })
     builder.addCase(updateCartsAPI.fulfilled, (state, action) => {
+      state.currentCarts = action.payload
+    })
+    builder.addCase(addToCartAPI.fulfilled, (state, action) => {
       state.currentCarts = action.payload
     })
   }

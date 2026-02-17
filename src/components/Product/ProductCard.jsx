@@ -1,10 +1,50 @@
-import { Card, CardMedia, CardContent, Typography, CardActions, Button, Box, Rating } from '@mui/material'
+import { Card, CardMedia, CardContent, Typography, CardActions, Button, Box } from '@mui/material'
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
+import { toast } from 'react-toastify'
+
+import { selectCurrentUser } from '~/redux/user/userSlice'
+import { addToCartAPI } from '~/redux/carts/cartSlice'
 
 function ProductCard({ product }) {
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const currentUser = useSelector(selectCurrentUser)
+
   const formatPrice = (price) => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)
+  }
+
+  const handleAddToCartClick = () => {
+    if (!currentUser) {
+      toast.warning('Fen vui lòng đăng nhập để mua hàng nhé!')
+      navigate('/login', { state: { from: location.pathname } })
+      return
+    }
+
+    if (product?.variants?.length > 0) {
+      toast.info('Vui lòng chọn màu sắc/dung lượng trước khi thêm vào giỏ!')
+      // Dùng _id hoặc slug tùy vào cấu hình Route
+      navigate(`/product/${product?._id}`)
+      return
+    }
+
+    const cartData = {
+      productId: product._id,
+      quantity: 1,
+      sku: null
+    }
+
+    dispatch(addToCartAPI(cartData))
+      .unwrap()
+      .then(() => {
+        toast.success(`Đã thêm vào giỏ hàng!`)
+      })
+      .catch((error) => {
+        console.log('Lỗi thêm giỏ hàng:', error)
+      })
   }
 
   return (
@@ -15,7 +55,7 @@ function ProductCard({ product }) {
       transition: 'all 0.3s ease',
       '&:hover': { transform: 'translateY(-5px)', boxShadow: 6 }
     }}>
-      {/* 2. Bọc ảnh bằng Link. Dùng product?._id hoặc product?.slug tùy theo route fen đặt */}
+      {/* Bọc ảnh bằng Link */}
       <Link to={`/product/${product?._id}`} style={{ textDecoration: 'none' }}>
         <CardMedia
           component="img"
@@ -27,7 +67,7 @@ function ProductCard({ product }) {
       </Link>
 
       <CardContent sx={{ flexGrow: 1, p: 2 }}>
-        {/* 3. Bọc tên sản phẩm bằng Link để khách dễ bấm */}
+        {/* Bọc tên sản phẩm bằng Link */}
         <Link to={`/product/${product?._id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
           <Typography
             gutterBottom
@@ -36,7 +76,6 @@ function ProductCard({ product }) {
               fontWeight: 'bold',
               cursor: 'pointer',
               '&:hover': { color: 'error.main' },
-              // Cắt chữ nếu tên quá dài
               display: '-webkit-box',
               WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
@@ -53,7 +92,9 @@ function ProductCard({ product }) {
       </CardContent>
 
       <CardActions sx={{ p: 2, pt: 0 }}>
+        {/* Gắn sự kiện onClick vào đây */}
         <Button
+          onClick={handleAddToCartClick}
           variant="contained"
           color="error"
           fullWidth

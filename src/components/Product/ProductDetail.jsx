@@ -3,11 +3,57 @@ import { useParams } from 'react-router-dom'
 import { Container, Grid, Typography, Box, Button, Chip, Stack, Divider, Table, TableBody, TableCell, TableContainer, TableRow, Paper } from '@mui/material'
 import { getProductDetailAPI } from '~/apis'
 import PageLoadingSpinner from '~/components/Loading/PageLoadingSpinner'
-import { useDispatch } from 'react-redux'
-import { addCurrentCart } from '~/redux/carts/cartSlice'
+import { addToCartAPI } from '~/redux/carts/cartSlice'
 import { toast } from 'react-toastify'
+import { useSelector, useDispatch } from 'react-redux'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { selectCurrentUser } from '~/redux/user/userSlice'
+import AddIcon from '@mui/icons-material/Add'
+import RemoveIcon from '@mui/icons-material/Remove'
+import { IconButton } from '@mui/material'
 
 function ProductDetail() {
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  const currentUser = useSelector(selectCurrentUser)
+
+  const [quantity, setQuantity] = useState(1)
+
+  const handleAddToCart = () => {
+    if (!currentUser) {
+      toast.warning('Vui lòng đăng nhập để mua hàng!')
+
+      // Chuyển hướng sang trang login. 
+      // Gói thêm cái state 'from' để lát nữa login xong biết đường mà quay lại đúng sản phẩm này.
+      navigate('/login', { state: { from: location.pathname } })
+      return
+    }
+    if (product?.variants?.length > 0 && !currentVariant) {
+      toast.warning('Vui lòng chọn màu sắc và dung lượng!')
+      return
+    }
+
+    const cartData = {
+      productId: product._id,
+      quantity: quantity,
+      sku: currentVariant?.sku || null
+    }
+
+    // console.log('cartData', cartData)
+
+    // Bắn API
+    dispatch(addToCartAPI(cartData))
+      .unwrap()
+      .then(() => {
+        toast.success('Đã thêm sản phẩm vào giỏ hàng!')
+        setQuantity(1)
+      })
+      .catch((error) => {
+        console.log(error)
+      })
+  }
+
   const { productId } = useParams()
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -96,21 +142,43 @@ function ProductDetail() {
             ))}
           </Stack>
 
-          {/* Nút bấm */}
-          <Button
-            variant="contained"
-            size="large"
-            fullWidth
-            color="error"
-            disabled={!currentVariant}
-            onClick={() => {
-              dispatch(addCurrentCart({ ...product, selectedVariant: currentVariant }))
-              toast.success('Đã thêm vào giỏ hàng!')
-            }}
-            sx={{ py: 1.5, fontWeight: 'bold', fontSize: '1.1rem' }}
-          >
-            {currentVariant ? 'Thêm vào giỏ hàng' : 'Phiên bản này không có sẵn'}
-          </Button>
+          {/* Cụm Chọn số lượng và Thêm vào giỏ hàng */}
+          <Box sx={{ mt: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+
+            {/* Bộ đếm Tăng/Giảm số lượng */}
+            <Box sx={{ display: 'flex', alignItems: 'center', border: '1px solid #e0e0e0', borderRadius: 1, height: '100%' }}>
+              <IconButton
+                onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
+                disabled={quantity <= 1} // Nếu = 1 thì mờ nút trừ đi
+              >
+                <RemoveIcon />
+              </IconButton>
+
+              <Typography sx={{ px: 3, fontWeight: 'bold', fontSize: '1.2rem' }}>
+                {quantity}
+              </Typography>
+
+              <IconButton
+                // Có thể thêm điều kiện chặn tăng nếu vượt quá tồn kho (nếu fen có dữ liệu tồn kho)
+                onClick={() => setQuantity(prev => prev + 1)}
+              >
+                <AddIcon />
+              </IconButton>
+            </Box>
+
+            {/* Nút Thêm vào giỏ hàng */}
+            <Button
+              variant="contained"
+              size="large"
+              fullWidth
+              color="error"
+              disabled={!currentVariant}
+              onClick={handleAddToCart}
+              sx={{ py: 1.5, fontWeight: 'bold', fontSize: '1.1rem', flexGrow: 1 }}
+            >
+              {currentVariant ? 'Thêm vào giỏ hàng' : 'Phiên bản không có sẵn'}
+            </Button>
+          </Box>
         </Grid>
       </Grid>
 
