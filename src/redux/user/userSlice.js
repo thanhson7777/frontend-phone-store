@@ -20,7 +20,7 @@ export const logoutUserAPI = createAsyncThunk(
   async (showSuccessMessage = true) => {
     const respone = await authorizeAxiosInstance.delete(`${API_ROOT}/v1/users/logout`)
     if (showSuccessMessage) {
-      toast.success('Logged out successfully!')
+      toast.success('Đăng xuất thành công!')
     }
     return respone.data
   }
@@ -42,9 +42,12 @@ export const userSlice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(loginUserAPI.fulfilled, (state, action) => {
       state.currentUser = action.payload
+      if (action.payload?.accessToken) {
+        localStorage.setItem('accessToken', action.payload.accessToken)
+        localStorage.setItem('refreshToken', action.payload.refreshToken)
+      }
     })
     builder.addCase(logoutUserAPI.fulfilled, (state) => {
-      // khi gọi API logout thành công thì clear thông tin currentUser + ProtectedRoute ở app.jsx => điều hướng về trang login
       state.currentUser = null
     })
     builder.addCase(updateUserAPI.fulfilled, (state, action) => {

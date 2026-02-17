@@ -2,10 +2,11 @@ import { useState } from 'react'
 import { Box, Button, IconButton, Avatar, Menu, MenuItem, ListItemIcon, Divider } from '@mui/material'
 import { Link } from 'react-router-dom'
 import { useSelector, useDispatch } from 'react-redux'
-import { selectCurrentUser, logoutUserAPI } from '~/redux/user/userSlice' // Giả sử fen đặt tên selector là này
+import { selectCurrentUser, logoutUserAPI } from '~/redux/user/userSlice'
 import Logout from '@mui/icons-material/Logout'
 import PersonIcon from '@mui/icons-material/Person'
 import Settings from '@mui/icons-material/Settings'
+import { useConfirm } from 'material-ui-confirm'
 
 function AuthButtons() {
   const dispatch = useDispatch()
@@ -19,10 +20,15 @@ function AuthButtons() {
   const handleClick = (event) => setAnchorEl(event.currentTarget)
   const handleClose = () => setAnchorEl(null)
 
+  const confirmLogout = useConfirm()
   const handleLogout = () => {
-    // Gọi action logout (fen có thể cần gọi API logout hoặc chỉ xóa state tùy logic)
-    // dispatch(logoutUserAPI()) 
-    handleClose()
+    confirmLogout({
+      title: 'Bạn có muốn đăng xuất?',
+      confirmationText: 'Đồng ý',
+      cancellationText: 'Hủy'
+    }).then(() => {
+      dispatch(logoutUserAPI())
+    }).catch(() => { })
   }
 
   // 2. Nếu đã đăng nhập: Hiện Icon Profile

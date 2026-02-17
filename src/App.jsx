@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import Auth from '~/page/Auth/Auth'
 import AccountVerifycation from '~/page/Auth/VerifyAccount'
 
@@ -6,8 +6,18 @@ import MainLayout from '~/components/MainLayout/MainLayout'
 import HomePage from '~/page/HomePage'
 import ProductDetail from './components/Product/ProductDetail'
 import CategoryProducts from './components/Category/CategoryProducts'
+import Cart from './page/Cart/Cart'
+import { selectCurrentUser } from './redux/user/userSlice'
+import { useSelector } from 'react-redux'
+
+const ProtectedRoute = ({ user }) => {
+  if (!user) return <Navigate to='/login' replace={true} />
+  return <Outlet />
+}
 
 function App() {
+  const currentUser = useSelector(selectCurrentUser)
+  console.log('currentUser', currentUser)
   return (
     <Routes>
 
@@ -17,6 +27,9 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/product/:productId" element={<ProductDetail />} />
         <Route path="/category/:categoryId" element={<CategoryProducts />} />
+        <Route element={< ProtectedRoute user={currentUser} />} >
+          <Route path="/cart" element={<Cart />} />
+        </Route>
 
       </Route>
 
