@@ -15,7 +15,7 @@ function CategoryProducts() {
     getCategoryDetailsAPI(categoryId)
       .then(res => {
         // Log ra để xem cấu trúc data (là mảng sản phẩm hay object category chứa mảng)
-        console.log('Category Details:', res)
+        // console.log('Category Details:', res)
         setCategory(res)
       })
       .catch(err => console.error('Lỗi lấy sp theo danh mục:', err))

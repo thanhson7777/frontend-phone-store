@@ -21,8 +21,8 @@ function ProductList() {
   useEffect(() => {
     getProductsAPI()
       .then((res) => {
-        console.log('res', res)
-        console.log('res.products', res.products)
+        // console.log('res', res)
+        // console.log('res.products', res.products)
         setProducts(res.products || [])
       })
       .catch((err) => { console.log('Loi o product: ', err) })

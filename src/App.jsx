@@ -7,8 +7,12 @@ import HomePage from '~/page/HomePage'
 import ProductDetail from './components/Product/ProductDetail'
 import CategoryProducts from './components/Category/CategoryProducts'
 import Cart from './page/Cart/Cart'
+import Checkout from './page/Checkout/Checkout'
 import { selectCurrentUser } from './redux/user/userSlice'
 import { useSelector } from 'react-redux'
+import OrderSuccess from './page/Order/OrderSuccess'
+import OrderHistory from './page/Order/OrderHistory'
+import Profile from './page/Profile/Profile'
 
 const ProtectedRoute = ({ user }) => {
   if (!user) return <Navigate to='/login' replace={true} />
@@ -17,7 +21,7 @@ const ProtectedRoute = ({ user }) => {
 
 function App() {
   const currentUser = useSelector(selectCurrentUser)
-  console.log('currentUser', currentUser)
+  // console.log('currentUser', currentUser)
   return (
     <Routes>
 
@@ -29,6 +33,11 @@ function App() {
         <Route path="/category/:categoryId" element={<CategoryProducts />} />
         <Route element={< ProtectedRoute user={currentUser} />} >
           <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/order-success" element={<OrderSuccess />} />
+          <Route path="/order-history" element={<OrderHistory />} />
+          <Route path="/profile/account" element={<Profile />} />
+          <Route path="/profile/security" element={<Profile />} />
         </Route>
 
       </Route>

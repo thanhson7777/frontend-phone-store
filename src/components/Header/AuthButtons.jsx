@@ -6,6 +6,7 @@ import { selectCurrentUser, logoutUserAPI } from '~/redux/user/userSlice'
 import Logout from '@mui/icons-material/Logout'
 import PersonIcon from '@mui/icons-material/Person'
 import Settings from '@mui/icons-material/Settings'
+import YoutubeSearchedForIcon from '@mui/icons-material/YoutubeSearchedFor'
 import { useConfirm } from 'material-ui-confirm'
 
 function AuthButtons() {
@@ -57,6 +58,10 @@ function AuthButtons() {
           <MenuItem component={Link} to="/profile">
             <ListItemIcon><PersonIcon fontSize="small" /></ListItemIcon>
             Trang cá nhân
+          </MenuItem>
+          <MenuItem component={Link} to="/order-history">
+            <ListItemIcon><YoutubeSearchedForIcon fontSize="small" /></ListItemIcon>
+            Lịch sử đơn hàng
           </MenuItem>
           <MenuItem>
             <ListItemIcon><Settings fontSize="small" /></ListItemIcon>

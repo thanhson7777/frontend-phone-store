@@ -40,3 +40,25 @@ export const getProductDetailAPI = async (productId) => {
   const response = await authorizeAxiosInstance.get(`${API_ROOT}/v1/products/${productId}`)
   return response.data
 }
+
+// order
+export const createOrderAPI = async (data) => {
+  const response = await authorizeAxiosInstance.post(`${API_ROOT}/v1/orders`, data)
+  return response.data
+}
+
+export const getUserOrdersAPI = async () => {
+  const response = await authorizeAxiosInstance.get(`${API_ROOT}/v1/orders/me`)
+  return response.data
+}
+
+export const canCelOrderAPI = async (orderId) => {
+  const response = await authorizeAxiosInstance.put(`${API_ROOT}/v1/orders/${orderId}/cancel`)
+  return response.data
+}
+
+// coupon
+export const getCouponsAPI = async () => {
+  const response = await authorizeAxiosInstance.get(`${API_ROOT}/v1/coupons/active`)
+  return response.data
+}

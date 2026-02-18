@@ -58,7 +58,7 @@ function Cart() {
       <Box sx={{ textAlign: 'center', mt: 10, mb: 10 }}>
         <img src="https://cdn-icons-png.flaticon.com/512/11329/11329060.png" alt="Empty Cart" width="150" />
         <Typography variant="h6" color="text.secondary" sx={{ mt: 2, mb: 3 }}>
-          Giỏ hàng của fen đang trống trơn!
+          Giỏ hàng của bạn đang trống trơn!
         </Typography>
         <Button component={Link} to="/" variant="contained" color="error">
           Đi mua sắm ngay
@@ -151,7 +151,13 @@ function Cart() {
               </Typography>
             </Box>
 
-            <Button variant="contained" color="error" fullWidth size="large" sx={{ py: 1.5, fontWeight: 'bold', fontSize: '1.1rem' }}>
+            <Button
+              variant="contained"
+              color="error"
+              fullWidth
+              size="large"
+              component={Link} to="/checkout"
+              sx={{ py: 1.5, fontWeight: 'bold', fontSize: '1.1rem' }}>
               Tiến hành Thanh toán
             </Button>
           </Card>
