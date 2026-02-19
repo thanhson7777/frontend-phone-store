@@ -13,6 +13,10 @@ import { useSelector } from 'react-redux'
 import OrderSuccess from './page/Order/OrderSuccess'
 import OrderHistory from './page/Order/OrderHistory'
 import Profile from './page/Profile/Profile'
+import AdminLayout from './components/Admin/AdminLayout'
+import Dashboard from './components/Admin/Dashboard'
+import Product from './components/Admin/Product'
+import Order from './components/Admin/Order'
 
 const ProtectedRoute = ({ user }) => {
   if (!user) return <Navigate to='/login' replace={true} />
@@ -39,8 +43,15 @@ function App() {
           <Route path="/profile/account" element={<Profile />} />
           <Route path="/profile/security" element={<Profile />} />
         </Route>
-
       </Route>
+
+      {/* NHỮNG TRANG DÀNH RIÊNG CHO ADMIN SẼ NẰM TRONG ADMINLAYOUT */}
+      <Route path="/admin" element={<AdminLayout />} >
+        <Route index element={<Dashboard />} />
+        <Route path="products" element={<Product />} />
+        <Route path="orders" element={<Order />} />
+      </Route>
+
 
 
       {/* NHỮNG TRANG ĐỘC LẬP (KHÔNG CÓ HEADER/FOOTER) SẼ NẰM NGOÀI */}
