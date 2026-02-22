@@ -35,7 +35,7 @@ function Cart() {
   }
 
   const handleRemoveItem = (productId, sku) => {
-    if (window.confirm('Fen có chắc chắn muốn xóa sản phẩm này khỏi giỏ hàng không?')) {
+    if (window.confirm('Bạn có chắc chắn muốn xóa sản phẩm này khỏi giỏ hàng không?')) {
 
       // Truyền quantity = 0 để Backend tự hiểu là Xóa sản phẩm
       dispatch(updateCartsAPI({ productId, sku, quantity: 0 }))

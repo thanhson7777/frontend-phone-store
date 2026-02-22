@@ -17,6 +17,8 @@ import AdminLayout from './components/Admin/AdminLayout'
 import Dashboard from './components/Admin/Dashboard'
 import Product from './components/Admin/Product'
 import Order from './components/Admin/Order'
+import Conpou from './components/Admin/Conpou'
+import User from './components/Admin/User'
 
 const ProtectedRoute = ({ user }) => {
   if (!user) return <Navigate to='/login' replace={true} />
@@ -50,6 +52,8 @@ function App() {
         <Route index element={<Dashboard />} />
         <Route path="products" element={<Product />} />
         <Route path="orders" element={<Order />} />
+        <Route path="coupons" element={<Conpou />} />
+        <Route path="users" element={<User />} />
       </Route>
 
 

@@ -26,11 +26,13 @@ authorizeAxiosInstance.interceptors.request.use((config) => {
   // Kĩ thuật chặn spam click
   interceptorLoadingElement(true)
 
-  const accessToken = localStorage.getItem('accessToken')
+  let token = localStorage.getItem('accessToken')
 
-  // Nếu có Token thì nhét vào Header
-  if (accessToken) {
-    config.headers.Authorization = `Bearer ${accessToken}`
+  if (token && token.startsWith('"') && token.endsWith('"')) {
+    token = token.slice(1, -1)
+  }
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`
   }
   return config
 }, function (error) {

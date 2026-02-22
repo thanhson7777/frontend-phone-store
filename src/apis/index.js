@@ -62,3 +62,34 @@ export const getCouponsAPI = async () => {
   const response = await authorizeAxiosInstance.get(`${API_ROOT}/v1/coupons/active`)
   return response.data
 }
+
+// admin
+export const fetchAdminDashboardAPI = async () => {
+  const response = await authorizeAxiosInstance.get(`${API_ROOT}/v1/dashboard`)
+  return response.data
+}
+
+export const fetchAdminProductsAPI = async () => {
+  const response = await authorizeAxiosInstance.get(`${API_ROOT}/v1/products/admin/all`)
+  return response.data
+}
+
+export const createAdminProductAPI = async (data) => {
+  const response = await authorizeAxiosInstance.post(`${API_ROOT}/v1/products`, data)
+  return response.data
+}
+
+export const updateAdminProductAPI = async (productId, data) => {
+  const response = await authorizeAxiosInstance.put(`${API_ROOT}/v1/products/${productId}`, data)
+  return response.data
+}
+
+export const deleteAdminProductAPI = async (productId) => {
+  const response = await authorizeAxiosInstance.delete(`${API_ROOT}/v1/products/${productId}`)
+  return response.data
+}
+
+export const fetchAdminCategoriesAPI = async () => {
+  const response = await authorizeAxiosInstance.get(`${API_ROOT}/v1/categories`)
+  return response.data
+}

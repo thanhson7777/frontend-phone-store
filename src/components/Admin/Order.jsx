@@ -112,7 +112,7 @@ function Order() {
         <Tabs
           value={currentTab}
           onChange={(e, newValue) => setCurrentTab(newValue)}
-          textColor="error" indicatorColor="error"
+          textColor="secondary" indicatorColor="secondary"
         >
           <Tab label="Tất cả" value="ALL" sx={{ fontWeight: 'bold' }} />
           {ORDER_STATUSES.map(tab => (
@@ -123,9 +123,9 @@ function Order() {
 
       {/* 2. BẢNG DANH SÁCH ĐƠN HÀNG */}
       <TableContainer component={Paper} elevation={2} sx={{ borderRadius: 2 }}>
-        <Table hover>
+        <Table >
           <TableHead sx={{ bgcolor: '#f8fafc' }}>
-            <TableRow>
+            <TableRow hover={true}>
               <TableCell sx={{ fontWeight: 'bold' }}>Mã Đơn</TableCell>
               <TableCell sx={{ fontWeight: 'bold' }}>Khách Hàng</TableCell>
               <TableCell sx={{ fontWeight: 'bold' }}>Ngày Đặt</TableCell>
@@ -139,7 +139,7 @@ function Order() {
               return (
                 <TableRow
                   key={row._id}
-                  hover
+                  hover={true}
                   onClick={() => handleOpenDrawer(row)} // Click vào dòng sẽ mở Drawer
                   sx={{ cursor: 'pointer' }}
                 >
