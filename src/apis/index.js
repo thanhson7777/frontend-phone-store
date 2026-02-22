@@ -93,3 +93,58 @@ export const fetchAdminCategoriesAPI = async () => {
   const response = await authorizeAxiosInstance.get(`${API_ROOT}/v1/categories`)
   return response.data
 }
+
+export const createAdminCategoryAPI = async (data) => {
+  const response = await authorizeAxiosInstance.post(`${API_ROOT}/v1/categories`, data)
+  return response.data
+}
+
+export const updateAdminCategoryAPI = async (categoryId, data) => {
+  const response = await authorizeAxiosInstance.put(`${API_ROOT}/v1/categories/${categoryId}`, data)
+  return response.data
+}
+
+export const deleteAdminCategoryAPI = async (categoryId) => {
+  const response = await authorizeAxiosInstance.delete(`${API_ROOT}/v1/categories/${categoryId}`)
+  return response.data
+}
+
+export const fetchAdminOrdersAPI = async (params = {}) => {
+  const response = await authorizeAxiosInstance.get(`${API_ROOT}/v1/orders/admin`, { params })
+  return response.data
+}
+
+export const updateAdminOrderStatusAPI = async (orderId, status) => {
+  const response = await authorizeAxiosInstance.patch(`${API_ROOT}/v1/orders/admin/${orderId}/status`, { status })
+  return response.data
+}
+
+export const fetchAdminCouponsAPI = async () => {
+  const response = await authorizeAxiosInstance.get(`${API_ROOT}/v1/coupons`)
+  return response.data
+}
+
+export const createAdminCouponAPI = async (data) => {
+  const response = await authorizeAxiosInstance.post(`${API_ROOT}/v1/coupons`, data)
+  return response.data
+}
+
+export const updateAdminCouponAPI = async (couponId, data) => {
+  const response = await authorizeAxiosInstance.put(`${API_ROOT}/v1/coupons/${couponId}`, data)
+  return response.data
+}
+
+export const deleteAdminCouponAPI = async (couponId) => {
+  const response = await authorizeAxiosInstance.delete(`${API_ROOT}/v1/coupons/${couponId}`)
+  return response.data
+}
+
+export const fetchAdminUsersAPI = async (params = {}) => {
+  const response = await authorizeAxiosInstance.get(`${API_ROOT}/v1/users`, { params })
+  return response.data
+}
+
+export const updateAdminUserRoleAPI = async (userId, data) => {
+  const response = await authorizeAxiosInstance.patch(`${API_ROOT}/v1/users/${userId}/status`, data)
+  return response.data
+}

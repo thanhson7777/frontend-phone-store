@@ -5,6 +5,7 @@ import {
   DialogContent, DialogActions, TextField, Grid, Avatar, CircularProgress, Stack
 } from '@mui/material'
 import { FormControl, InputLabel, Select, MenuItem } from '@mui/material'
+import PageLoadingSpinner from '../Loading/PageLoadingSpinner'
 
 // Icons
 import AddIcon from '@mui/icons-material/Add'
@@ -25,10 +26,6 @@ import {
 const formatPrice = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price || 0)
 
 function Product() {
-  const handleToggleExpand = (id) => {
-    // Nếu bấm lại dòng đang mở thì đóng nó, nếu bấm dòng khác thì mở dòng đó
-    setExpandedRowId(expandedRowId === id ? null : id)
-  }
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
@@ -120,12 +117,21 @@ function Product() {
         formData.append('image', imageFile)
       }
 
-      // GỌI API THÊM MỚI
-      await createAdminProductAPI(formData)
+      try {
+        const res = await toast.promise(
+          createAdminProductAPI(formData),
+          {
+            pending: 'Đang tải dữ liệu...',
+            success: 'Thêm điện thoại mới thành công!',
+            error: 'Thêm thất bại, vui lòng kiểm tra lại!'
+          }
+        )
+        handleCloseAddModal()
+        loadData()
 
-      toast.success("Thêm sản phẩm thành công!")
-      handleCloseAddModal()
-      loadData()
+      } catch (error) {
+        console.error('Lỗi khi thêm máy mới:', error)
+      }
     } catch (error) {
       console.error('Lỗi khi thêm sản phẩm:', error)
       toast.error("Có lỗi xảy ra, vui lòng xem console!")
@@ -180,14 +186,26 @@ function Product() {
         formData.append('brand', editData.brand)
         formData.append('basePrice', editData.basePrice)
         formData.append('quantity', editData.quantity)
-        formData.append('categoryId', row.categoryId || '65b1234567890abcdef12345')
+        formData.append('categoryId', row.categoryId)
         formData.append('variants', JSON.stringify(variants))
 
         if (editImgFile) formData.append('image', editImgFile)
 
-        await updateAdminProductAPI(row._id, formData)
-        setExpandedRowId(null)
-        loadData()
+        try {
+          const res = await toast.promise(
+            updateAdminProductAPI(row._id, formData),
+            {
+              pending: 'Đang cập nhật sản phẩm...',
+              success: 'Cập nhật sản phẩm thành công!',
+              error: 'Cập nhật thất bại, vui lòng kiểm tra lại!'
+            }
+          )
+          setExpandedRowId(null)
+          loadData()
+
+        } catch (error) {
+          console.error('Lỗi khi thêm máy mới:', error)
+        }
       } catch (error) {
         console.error('Lỗi cập nhật:', error)
       }
@@ -290,7 +308,7 @@ function Product() {
     )
   }
 
-  if (loading) return <CircularProgress sx={{ display: 'block', mx: 'auto', mt: 10 }} />
+  if (loading) return <PageLoadingSpinner caption="Đang tải dữ liệu..." />
 
   return (
     <Box sx={{ pb: 5 }}>
