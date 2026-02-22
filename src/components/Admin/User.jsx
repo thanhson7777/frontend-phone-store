@@ -1,187 +1,196 @@
-import { useState, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import {
-  Box, Typography, Button, Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, Paper, IconButton, Collapse, Dialog, DialogTitle,
-  DialogContent, DialogActions, TextField, Grid, Switch, Chip, Avatar,
-  MenuItem, Select, FormControl, InputLabel, InputAdornment, Tabs, Tab, Tooltip
+  Box, Typography, Table, TableBody, TableCell, TableContainer,
+  TableHead, TableRow, Paper, Tabs, Tab, Select, MenuItem,
+  IconButton, Collapse, Grid, Avatar, CircularProgress, Switch,
+  TextField, InputAdornment, Button, Chip, Pagination
 } from '@mui/material'
 
-// Icons
+import PeopleAltIcon from '@mui/icons-material/PeopleAlt'
 import SearchIcon from '@mui/icons-material/Search'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp'
-import SaveIcon from '@mui/icons-material/Save'
-import GroupIcon from '@mui/icons-material/Group'
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings'
 import PersonIcon from '@mui/icons-material/Person'
 import BlockIcon from '@mui/icons-material/Block'
+import { toast } from 'react-toastify'
 
-// ==========================================
-// 📦 MOCK DATA
-// ==========================================
-// Giả lập ID của Admin đang đăng nhập (Để test tính năng chống "Tự sát")
-const currentAdminId = 'U1'
+// Import API
+import {
+  fetchAdminUsersAPI,
+  updateAdminUserRoleAPI
+} from '~/apis'
+import { useSelector } from 'react-redux'
+import { selectCurrentUser } from '~/redux/user/userSlice'
 
-const mockUsers = [
-  { _id: 'U1', name: 'Nguyễn Văn Admin', email: 'admin@phonestore.com', phone: '0901234567', role: 'ADMIN', status: 'ACTIVE', avatar: 'https://i.pravatar.cc/150?u=1', createdAt: '2025-01-10T10:00', orderCount: 15 },
-  { _id: 'U2', name: 'Trần Khách Hàng', email: 'khachhang@gmail.com', phone: '0987654321', role: 'USER', status: 'ACTIVE', avatar: 'https://i.pravatar.cc/150?u=2', createdAt: '2026-02-15T14:30', orderCount: 3 },
-  { _id: 'U3', name: 'Lê Spam Bom Hàng', email: 'spammer@yahoo.com', phone: '0911222333', role: 'USER', status: 'BLOCKED', avatar: 'https://i.pravatar.cc/150?u=3', createdAt: '2026-02-20T09:15', orderCount: 0 },
-]
-
-const formatDate = (dateString) => new Date(dateString).toLocaleDateString('vi-VN')
+// Hàm format ngày tháng
+const formatDate = (timestamp) => {
+  if (!timestamp) return ''
+  const d = new Date(timestamp)
+  return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`
+}
 
 function User() {
-  const [users, setUsers] = useState(mockUsers)
+  const [users, setUsers] = useState([])
+  const [loading, setLoading] = useState(true)
   const [currentTab, setCurrentTab] = useState('ALL')
-  const [searchQuery, setSearchQuery] = useState('')
   const [expandedRowId, setExpandedRowId] = useState(null)
 
-  // State cho Popup xác nhận thăng cấp Admin
-  const [promoteConfirm, setPromoteConfirm] = useState({ isOpen: false, user: null, newRole: '' })
+  // State Phân trang & Tìm kiếm
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [searchQuery, setSearchQuery] = useState('')
+
+  const currentUser = useSelector(selectCurrentUser)
+
+  const currentUserId = currentUser?._id
 
   // ==========================================
-  // HÀM XỬ LÝ LỌC & TÌM KIẾM
+  // 1. LẤY DỮ LIỆU USER TỪ BACKEND
   // ==========================================
-  const filteredUsers = useMemo(() => {
-    let result = users
+  const loadUsers = async () => {
+    try {
+      setLoading(true)
+      const params = { page: page, limit: 10 }
 
-    // 1. Lọc theo Tab
-    if (currentTab === 'ADMIN') result = result.filter(u => u.role === 'ADMIN')
-    if (currentTab === 'USER') result = result.filter(u => u.role === 'USER')
-    if (currentTab === 'BLOCKED') result = result.filter(u => u.status === 'BLOCKED')
+      // Xử lý logic Tab lọc
+      if (currentTab === 'ADMIN') params.role = 'ADMIN'
+      if (currentTab === 'CLIENT') params.role = 'CLIENT'
+      if (currentTab === 'BLOCKED') params.isActive = 'false'
 
-    // 2. Lọc theo Text Search (Tên, Email hoặc SĐT)
-    if (searchQuery) {
-      const lowerQuery = searchQuery.toLowerCase()
-      result = result.filter(u =>
-        u.name.toLowerCase().includes(lowerQuery) ||
-        u.email.toLowerCase().includes(lowerQuery) ||
-        u.phone.includes(searchQuery)
-      )
+      // Nếu có search thì gửi keyword lên (Backend cần support tìm kiếm keyword)
+      if (searchQuery) params.keyword = searchQuery
+
+      const res = await fetchAdminUsersAPI(params)
+      if (res && res.data) {
+        setUsers(res.data.users || [])
+        setTotalPages(res.data.pagination?.totalPages || 1)
+      }
+    } catch (error) {
+      console.error('Lỗi lấy user:', error)
+    } finally {
+      setLoading(false)
     }
-    return result
-  }, [users, currentTab, searchQuery])
+  }
+
+  useEffect(() => { loadUsers() }, [page, currentTab])
+
+  // Xử lý Search (Bấm Enter mới tìm để đỡ gọi API liên tục)
+  const handleSearch = (e) => {
+    if (e.key === 'Enter') {
+      setPage(1)
+      loadUsers()
+    }
+  }
 
   // ==========================================
-  // COMPONENT DÒNG DỮ LIỆU (ROW)
+  // 2. COMPONENT DÒNG DỮ LIỆU
   // ==========================================
   const UserRow = ({ row }) => {
     const isExpanded = expandedRowId === row._id
+    const isCurrentUser = row._id === currentUserId // 🌟 LOGIC QUAN TRỌNG: Kiểm tra xem có phải chính mình không
 
-    // 🌟 BẪY PHÒNG THỦ 1: Kiểm tra xem user này có phải là chính mình không
-    const isMe = row._id === currentAdminId
+    const [editRole, setEditRole] = useState(row.role || 'CLIENT')
 
-    // State nội bộ cho form Sửa
-    const [editData, setEditData] = useState({
-      role: row.role,
-      status: row.status
-    })
-
-    const handleToggleExpand = (id) => setExpandedRowId(expandedRowId === id ? null : id)
-
-    // Bật tắt trạng thái nhanh ngay ngoài bảng
-    const handleToggleStatus = (e) => {
+    // API: Bật/Tắt tài khoản
+    const handleToggleStatus = async (e) => {
       e.stopPropagation()
-      if (isMe) return // Không cho tự khóa mình
+      if (isCurrentUser) return toast.warning('Bạn không thể tự khóa tài khoản của mình!')
 
-      const newStatus = row.status === 'ACTIVE' ? 'BLOCKED' : 'ACTIVE'
-      // Đáng lẽ sẽ gọi API ở đây, giờ mình update state UI
-      setUsers(users.map(u => u._id === row._id ? { ...u, status: newStatus } : u))
+      try {
+        const newStatus = e.target.checked
+        await updateAdminUserRoleAPI(row._id, { isActive: newStatus })
+        toast.success(newStatus ? 'Đã mở khóa tài khoản!' : 'Đã khóa tài khoản!')
+        loadUsers()
+      } catch (error) { toast.error("Không thể đổi trạng thái") }
     }
 
-    // Xử lý khi chọn đổi Role trong Dropdown
-    const handleRoleChange = (e) => {
-      const selectedRole = e.target.value
-      if (selectedRole === 'ADMIN' && row.role === 'USER') {
-        // Nếu đang là User mà đòi lên Admin -> Bật Cảnh Báo
-        setPromoteConfirm({ isOpen: true, user: row, newRole: selectedRole })
-      } else {
-        setEditData({ ...editData, role: selectedRole })
-      }
+    // API: Lưu thay đổi Quyền
+    const handleSaveRole = async () => {
+      if (isCurrentUser) return toast.warning('Bạn không thể tự đổi quyền của mình!')
+      if (editRole === row.role) return setExpandedRowId(null)
+
+      try {
+        await toast.promise(
+          updateAdminUserRoleAPI(row._id, { role: editRole }),
+          { pending: 'Đang cập nhật...', success: 'Cập nhật phân quyền thành công!', error: 'Lỗi!' }
+        )
+        setExpandedRowId(null)
+        loadUsers()
+      } catch (error) { console.error(error) }
     }
 
     return (
       <>
         {/* DÒNG HIỂN THỊ CHÍNH */}
-        <TableRow hover={true} onClick={() => handleToggleExpand(row._id)} sx={{ cursor: 'pointer', '& > *': { borderBottom: 'unset' }, opacity: row.status === 'BLOCKED' ? 0.6 : 1 }}>
-          <TableCell>
-            <IconButton size="small" onClick={(e) => { e.stopPropagation(); handleToggleExpand(row._id); }}>
-              {isExpanded ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-            </IconButton>
-          </TableCell>
+        <TableRow hover sx={{ cursor: 'pointer', '& > *': { borderBottom: 'unset', bgcolor: isCurrentUser ? '#fff1f2' : 'inherit' } }} onClick={() => setExpandedRowId(isExpanded ? null : row._id)}>
+          <TableCell width="40px"><IconButton size="small"><KeyboardArrowDownIcon sx={{ transform: isExpanded ? 'rotate(180deg)' : 'none', transition: '0.3s' }} /></IconButton></TableCell>
+
           <TableCell>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              <Avatar src={row.avatar} alt={row.name} sx={{ width: 40, height: 40 }} />
+              <Avatar src={row.avatar} alt={row.displayName} />
               <Box>
-                <Typography fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  {row.name}
-                  {/* Nếu là tài khoản của mình thì hiện thêm chữ (Bạn) */}
-                  {isMe && <Typography variant="caption" sx={{ color: 'error.main', fontStyle: 'italic' }}>(Bạn)</Typography>}
+                <Typography fontWeight="bold" fontSize="14px">
+                  {row.displayName || row.username}
+                  {isCurrentUser && <span style={{ color: '#ef4444', fontStyle: 'italic', fontWeight: 'normal', marginLeft: '6px' }}>(Bạn)</span>}
                 </Typography>
-                <Typography variant="caption" color="text.secondary">{row.email}</Typography>
+                <Typography fontSize="13px" color="text.secondary">{row.email}</Typography>
               </Box>
             </Box>
           </TableCell>
-          <TableCell>{row.phone}</TableCell>
+
           <TableCell>
-            {row.role === 'ADMIN'
-              ? <Chip icon={<AdminPanelSettingsIcon />} label="Quản trị" color="error" size="small" sx={{ fontWeight: 'bold' }} />
-              : <Chip icon={<PersonIcon />} label="Khách hàng" color="primary" size="small" variant="outlined" />}
+            <Chip
+              icon={row.role === 'ADMIN' ? <AdminPanelSettingsIcon /> : <PersonIcon />}
+              label={row.role === 'ADMIN' ? 'Quản trị' : 'Khách hàng'}
+              color={row.role === 'ADMIN' ? 'error' : 'default'}
+              size="small"
+              sx={{ fontWeight: 'bold' }}
+            />
           </TableCell>
+
           <TableCell>{formatDate(row.createdAt)}</TableCell>
-          <TableCell align="right">
-            {/* Công tắc Khóa/Mở tài khoản */}
-            <Tooltip title={isMe ? "Không thể tự khóa tài khoản của mình" : (row.status === 'ACTIVE' ? "Khóa tài khoản" : "Mở khóa")}>
-              <span>
-                <Switch
-                  checked={row.status === 'ACTIVE'}
-                  color="success"
-                  onChange={handleToggleStatus}
-                  disabled={isMe} // 🌟 BẪY PHÒNG THỦ
-                />
-              </span>
-            </Tooltip>
+
+          <TableCell onClick={(e) => e.stopPropagation()}>
+            <Switch color="success" checked={row.isActive !== false} onChange={handleToggleStatus} disabled={isCurrentUser} />
           </TableCell>
         </TableRow>
 
-        {/* KHUNG TRƯỢT XUỐNG ĐỂ CẤP QUYỀN */}
+        {/* THANH TRƯỢT SỬA PHÂN QUYỀN */}
         <TableRow>
           <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={6}>
             <Collapse in={isExpanded} timeout="auto" unmountOnExit>
               <Box sx={{ p: 3, my: 2, bgcolor: '#f8fafc', borderRadius: 2, border: '1px dashed #cbd5e1' }}>
-                <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 3 }}>
-                  Thiết lập phân quyền: <span style={{ color: '#3b82f6' }}>{row.email}</span>
+                <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 2 }}>
+                  Thiết lập phân quyền: <span style={{ color: '#2563eb' }}>{row.email}</span>
                 </Typography>
 
                 <Grid container spacing={4} alignItems="center">
-                  {/* Cột 1: Thông tin mua hàng */}
+                  {/* Cột Thống kê (Giả lập) */}
                   <Grid item xs={12} md={4}>
-                    <Box sx={{ p: 2, bgcolor: '#fff', borderRadius: 2, border: '1px solid #e2e8f0' }}>
-                      <Typography variant="caption" color="text.secondary">Thống kê mua hàng</Typography>
-                      <Typography variant="h6" fontWeight="bold" color="primary.main">
-                        Đã mua {row.orderCount} đơn
-                      </Typography>
+                    <Box sx={{ p: 2, border: '1px solid #e2e8f0', borderRadius: 2, bgcolor: '#fff' }}>
+                      <Typography variant="body2" color="text.secondary" mb={1}>Thống kê mua hàng</Typography>
+                      <Typography variant="h6" fontWeight="bold" color="error.main">Đã mua {row.orderCount || 0} đơn</Typography>
                     </Box>
                   </Grid>
 
-                  {/* Cột 2: Form đổi quyền */}
-                  <Grid item xs={12} md={4}>
-                    <FormControl fullWidth size="small" disabled={isMe}>
-                      <InputLabel>Vai trò hệ thống (Role)</InputLabel>
-                      <Select
-                        value={editData.role} label="Vai trò hệ thống (Role)"
-                        onChange={handleRoleChange}
-                      >
-                        <MenuItem value="USER">Khách hàng (USER)</MenuItem>
-                        <MenuItem value="ADMIN">Quản trị viên (ADMIN)</MenuItem>
-                      </Select>
-                    </FormControl>
-                    {isMe && <Typography variant="caption" color="error.main" sx={{ mt: 1, display: 'block' }}>* Bạn không thể tự thay đổi quyền của chính mình.</Typography>}
+                  {/* Cột Form Đổi Quyền */}
+                  <Grid item xs={12} md={5}>
+                    <Typography variant="body2" color="text.secondary" mb={1}>Vai trò hệ thống (Role)</Typography>
+                    <Select fullWidth size="small" value={editRole} onChange={(e) => setEditRole(e.target.value)} disabled={isCurrentUser}>
+                      <MenuItem value="ADMIN">Quản trị viên (ADMIN)</MenuItem>
+                      <MenuItem value="CLIENT">Khách hàng (CLIENT)</MenuItem>
+                    </Select>
+                    {isCurrentUser && (
+                      <Typography variant="caption" color="error.main" sx={{ display: 'block', mt: 1 }}>
+                        * Bạn không thể tự thay đổi quyền của chính mình.
+                      </Typography>
+                    )}
                   </Grid>
 
-                  <Grid item xs={12} md={4} sx={{ textAlign: 'right' }}>
-                    <Button variant="outlined" color="inherit" onClick={() => setExpandedRowId(null)} sx={{ mr: 2 }}>Đóng</Button>
-                    <Button variant="contained" color="primary" startIcon={<SaveIcon />} disabled={isMe}>Lưu Phân Quyền</Button>
+                  {/* Cột Nút bấm */}
+                  <Grid item xs={12} md={3} sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end', mt: { xs: 2, md: 0 } }}>
+                    <Button variant="outlined" color="inherit" onClick={() => setExpandedRowId(null)}>Đóng</Button>
+                    <Button variant="contained" color="error" disabled={isCurrentUser || editRole === row.role} onClick={handleSaveRole}>Lưu Phân Quyền</Button>
                   </Grid>
                 </Grid>
               </Box>
@@ -192,88 +201,69 @@ function User() {
     )
   }
 
+  if (loading && users.length === 0) return <CircularProgress sx={{ display: 'block', mx: 'auto', mt: 10 }} />
+
   return (
     <Box sx={{ pb: 5 }}>
-      {/* HEADER & THANH TÌM KIẾM */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
+      {/* HEADER & SEARCH BAR */}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <GroupIcon color="primary" fontSize="large" />
-          <Typography variant="h5" fontWeight="bold" color="#1e293b">Quản lý Khách Hàng</Typography>
+          <PeopleAltIcon color="error" fontSize="large" />
+          <Typography variant="h5" fontWeight="bold">Quản lý Khách Hàng</Typography>
         </Box>
-
         <TextField
-          placeholder="Tìm tên, email, sđt..."
+          placeholder="Tìm tên, email..."
           size="small"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          sx={{ width: { xs: '100%', md: '300px' }, bgcolor: '#fff', borderRadius: 1 }}
-          InputProps={{
-            startAdornment: <InputAdornment position="start"><SearchIcon color="action" /></InputAdornment>,
-          }}
+          onKeyDown={handleSearch}
+          InputProps={{ startAdornment: (<InputAdornment position="start"><SearchIcon /></InputAdornment>) }}
+          sx={{ width: '300px', bgcolor: '#fff', borderRadius: 1 }}
         />
       </Box>
 
-      {/* THANH TABS LỌC TRẠNG THÁI */}
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3, bgcolor: '#fff', borderRadius: 2, px: 2 }}>
-        <Tabs value={currentTab} onChange={(e, val) => setCurrentTab(val)} textColor="primary" indicatorColor="primary">
-          <Tab label="Tất cả" value="ALL" sx={{ fontWeight: 'bold' }} />
-          <Tab icon={<AdminPanelSettingsIcon fontSize="small" />} iconPosition="start" label="Quản trị viên" value="ADMIN" sx={{ fontWeight: 'bold' }} />
-          <Tab icon={<PersonIcon fontSize="small" />} iconPosition="start" label="Khách hàng" value="USER" sx={{ fontWeight: 'bold' }} />
-          <Tab icon={<BlockIcon fontSize="small" />} iconPosition="start" label="Bị khóa" value="BLOCKED" sx={{ fontWeight: 'bold', color: 'error.main' }} />
+      {/* THANH TABS */}
+      <Paper elevation={1} sx={{ mb: 3, borderRadius: 2 }}>
+        <Tabs
+          value={currentTab}
+          onChange={(e, newVal) => { setCurrentTab(newVal); setPage(1); }}
+          textColor="error" indicatorColor="error" variant="scrollable"
+        >
+          <Tab label="TẤT CẢ" value="ALL" sx={{ fontWeight: 'bold' }} />
+          <Tab icon={<AdminPanelSettingsIcon fontSize="small" />} iconPosition="start" label="QUẢN TRỊ VIÊN" value="ADMIN" sx={{ fontWeight: 'bold' }} />
+          <Tab icon={<PersonIcon fontSize="small" />} iconPosition="start" label="KHÁCH HÀNG" value="USER" sx={{ fontWeight: 'bold' }} />
+          <Tab icon={<BlockIcon fontSize="small" />} iconPosition="start" label="BỊ KHÓA" value="BLOCKED" sx={{ fontWeight: 'bold' }} />
         </Tabs>
-      </Box>
+      </Paper>
 
-      {/* BẢNG DANH SÁCH */}
+      {/* BẢNG DỮ LIỆU */}
       <TableContainer component={Paper} elevation={2} sx={{ borderRadius: 2 }}>
         <Table>
           <TableHead sx={{ bgcolor: '#f8fafc' }}>
-            <TableRow hover={true}>
-              <TableCell width="50px" />
+            <TableRow>
+              <TableCell width="40px" />
               <TableCell sx={{ fontWeight: 'bold' }}>Khách Hàng</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Điện Thoại</TableCell>
               <TableCell sx={{ fontWeight: 'bold' }}>Phân Quyền</TableCell>
               <TableCell sx={{ fontWeight: 'bold' }}>Ngày Tham Gia</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }} align="right">Trạng Thái (Active)</TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }}>Trạng Thái (Active)</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredUsers.length > 0 ? (
-              filteredUsers.map((row) => <UserRow key={row._id} row={row} />)
+            {users.length > 0 ? (
+              users.map((row) => <UserRow key={row._id} row={row} />)
             ) : (
-              <TableRow>
-                <TableCell colSpan={6} align="center" sx={{ py: 5 }}>
-                  <Typography color="text.secondary">Không tìm thấy khách hàng nào.</Typography>
-                </TableCell>
-              </TableRow>
+              <TableRow><TableCell colSpan={6} align="center" sx={{ py: 3 }}>Không tìm thấy dữ liệu!</TableCell></TableRow>
             )}
           </TableBody>
         </Table>
       </TableContainer>
 
-      {/* ========================================== */}
-      {/* 🌟 BẪY PHÒNG THỦ 2: POPUP CẢNH BÁO THĂNG CẤP */}
-      {/* ========================================== */}
-      <Dialog open={promoteConfirm.isOpen} onClose={() => setPromoteConfirm({ isOpen: false, user: null, newRole: '' })} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ fontWeight: 'bold', color: 'error.main', display: 'flex', alignItems: 'center', gap: 1 }}>
-          <AdminPanelSettingsIcon /> Cảnh báo bảo mật
-        </DialogTitle>
-        <DialogContent dividers>
-          <Typography variant="body1" sx={{ mb: 2 }}>
-            Bạn đang chuẩn bị cấp quyền <b>Quản trị viên (ADMIN)</b> cho tài khoản:
-          </Typography>
-          <Box sx={{ p: 2, bgcolor: '#f8fafc', borderRadius: 2, border: '1px solid #e2e8f0' }}>
-            <Typography fontWeight="bold" color="primary">{promoteConfirm.user?.name}</Typography>
-            <Typography variant="body2" color="text.secondary">{promoteConfirm.user?.email}</Typography>
-          </Box>
-          <Typography variant="body2" color="error.main" sx={{ mt: 2, fontStyle: 'italic' }}>
-            * Lưu ý: Người này sẽ có toàn quyền xem doanh thu, sửa sản phẩm và quản lý hệ thống. Bạn có chắc chắn không?
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ p: 2 }}>
-          <Button onClick={() => setPromoteConfirm({ isOpen: false, user: null, newRole: '' })} color="inherit">Hủy bỏ</Button>
-          <Button variant="contained" color="error">Xác nhận Thăng Cấp</Button>
-        </DialogActions>
-      </Dialog>
+      {/* PHÂN TRANG */}
+      {totalPages > 1 && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <Pagination count={totalPages} page={page} onChange={(e, val) => setPage(val)} color="error" size="large" />
+        </Box>
+      )}
     </Box>
   )
 }

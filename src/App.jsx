@@ -16,6 +16,7 @@ import Profile from './page/Profile/Profile'
 import AdminLayout from './components/Admin/AdminLayout'
 import Dashboard from './components/Admin/Dashboard'
 import Product from './components/Admin/Product'
+import Category from './components/Admin/Category'
 import Order from './components/Admin/Order'
 import Conpou from './components/Admin/Conpou'
 import User from './components/Admin/User'
@@ -51,6 +52,7 @@ function App() {
       <Route path="/admin" element={<AdminLayout />} >
         <Route index element={<Dashboard />} />
         <Route path="products" element={<Product />} />
+        <Route path="categories" element={<Category />} />
         <Route path="orders" element={<Order />} />
         <Route path="coupons" element={<Conpou />} />
         <Route path="users" element={<User />} />
