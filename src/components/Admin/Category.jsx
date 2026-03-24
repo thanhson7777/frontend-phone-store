@@ -40,10 +40,18 @@ function Category() {
     try {
       setLoading(true)
       const res = await fetchAdminCategoriesAPI()
-      if (Array.isArray(res)) setCategories(res)
-      else if (res.success) setCategories(res.data)
+      // Backend trả về { categories: [...], pagination: {...} }
+      if (res?.categories) {
+        setCategories(res.categories)
+      } else if (Array.isArray(res)) {
+        setCategories(res)
+      } else {
+        console.error('Unexpected response structure:', res)
+        setCategories([])
+      }
     } catch (error) {
       console.error('Lỗi lấy danh mục:', error)
+      setCategories([])
     } finally {
       setLoading(false)
     }

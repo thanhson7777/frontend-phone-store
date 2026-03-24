@@ -1,16 +1,22 @@
 import { Box, Container, Typography } from '@mui/material'
 import Slider from 'react-slick'
+import logo1 from '~/assets/logo_branch/logo1.jpg'
+import logo2 from '~/assets/logo_branch/logo2.jpg'
+import logo3 from '~/assets/logo_branch/logo3.jpg'
+import logo4 from '~/assets/logo_branch/logo4.jpg'
+import logo5 from '~/assets/logo_branch/logo5.jpg'
+
 
 // Mock brand logos - trong thực tế sẽ lấy từ API
 const brands = [
   { id: 1, name: 'Apple', logo: 'https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg' },
-  { id: 2, name: 'Samsung', logo: 'https://upload.wikimedia.org/wikipedia/commons/2/24/Samsung_Logo.svg' },
+  { id: 2, name: 'Samsung', logo: logo1 },
   { id: 3, name: 'Xiaomi', logo: 'https://upload.wikimedia.org/wikipedia/commons/a/ae/Xiaomi_logo_%282021-%29.svg' },
   { id: 4, name: 'OPPO', logo: 'https://upload.wikimedia.org/wikipedia/commons/0/0a/OPPO_LOGO_2019.svg' },
-  { id: 5, name: 'Vivo', logo: 'https://upload.wikimedia.org/wikipedia/commons/1/10/Vivo_logo.svg' },
-  { id: 6, name: 'Realme', logo: 'https://upload.wikimedia.org/wikipedia/commons/9/91/Realme_logo.svg' },
-  { id: 7, name: 'Nokia', logo: 'https://upload.wikimedia.org/wikipedia/commons/0/02/Nokia_logo.svg' },
-  { id: 8, name: 'OnePlus', logo: 'https://upload.wikimedia.org/wikipedia/commons/9/92/OnePlus_logo.svg' }
+  { id: 5, name: 'Vivo', logo: logo2 },
+  { id: 6, name: 'Realme', logo: logo3 },
+  { id: 7, name: 'Nokia', logo: logo4 },
+  { id: 8, name: 'OnePlus', logo: logo5 }
 ]
 
 function BrandCarousel() {

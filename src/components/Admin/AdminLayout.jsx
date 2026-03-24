@@ -16,6 +16,9 @@ import PeopleIcon from '@mui/icons-material/People'
 import LogoutIcon from '@mui/icons-material/Logout'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import CategoryIcon from '@mui/icons-material/Category'
+import ImageIcon from '@mui/icons-material/Image'
+import ArticleIcon from '@mui/icons-material/Article'
+import ContactPhoneIcon from '@mui/icons-material/ContactPhone'
 
 const drawerWidth = 260
 
@@ -24,6 +27,9 @@ const MENU_ITEMS = [
   { text: 'Tổng quan', icon: <DashboardIcon />, path: '/admin' },
   { text: 'Sản phẩm', icon: <SmartphoneIcon />, path: '/admin/products' },
   { text: 'Danh mục', icon: <CategoryIcon />, path: '/admin/categories' },
+  { text: 'Banner', icon: <ImageIcon />, path: '/admin/banners' },
+  { text: 'Bài viết', icon: <ArticleIcon />, path: '/admin/articles' },
+  { text: 'Liên hệ', icon: <ContactPhoneIcon />, path: '/admin/contact' },
   { text: 'Đơn hàng', icon: <ReceiptLongIcon />, path: '/admin/orders' },
   { text: 'Mã giảm giá', icon: <CardGiftcardIcon />, path: '/admin/coupons' },
   { text: 'Khách hàng', icon: <PeopleIcon />, path: '/admin/users' }

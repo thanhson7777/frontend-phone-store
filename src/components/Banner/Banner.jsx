@@ -1,17 +1,55 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Slider from 'react-slick'
 import { Box, Typography, useTheme } from '@mui/material'
 
 import "slick-carousel/slick/slick.css"
 import "slick-carousel/slick/slick-theme.css"
+import { getActiveBannersAPI } from '~/apis'
+
+const FALLBACK_BANNERS = [
+  {
+    _id: 'fallback-1',
+    image: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=1600&q=80',
+    title: 'Khám Phá Điện Thoại Mới Nhất',
+    subtitle: 'Công nghệ tiên tiến, thiết kế sang trọng. Mua ngay hôm nay!'
+  },
+  {
+    _id: 'fallback-2',
+    image: 'https://images.unsplash.com/photo-1556656793-08538906a9f8?auto=format&fit=crop&w=1600&q=80',
+    title: 'Ưu Đãi Đặc Biệt Cho Bạn',
+    subtitle: 'Giảm giá lên đến 50% cho các mẫu flagship.'
+  },
+  {
+    _id: 'fallback-3',
+    image: 'https://images.unsplash.com/photo-1593642632823-8f785ba67e45?auto=format&fit=crop&w=1600&q=80',
+    title: 'Trải Nghiệm Màn Hình Siêu Sắc Nét',
+    subtitle: 'OLED 4K, màu sắc sống động như thật.'
+  }
+]
 
 function Banner() {
   const theme = useTheme()
+  const [bannerSlides, setBannerSlides] = useState(FALLBACK_BANNERS)
+  const [imageErrors, setImageErrors] = useState({})
 
-  // Cấu hình độ mượt, tốc độ và auto play cho Banner - Thêm fade effect
+  useEffect(() => {
+    const fetchBanners = async () => {
+      try {
+        const data = await getActiveBannersAPI()
+        console.log(data)
+        if (Array.isArray(data) && data.length > 0) {
+          setBannerSlides(data)
+        }
+      } catch {
+        // giữ fallback nếu API lỗi
+      }
+    }
+    fetchBanners()
+  }, [])
+
   const settings = {
     dots: true,
-    infinite: true,
+    infinite: bannerSlides.length > 1,
     speed: 1000,
     slidesToShow: 1,
     slidesToScroll: 1,
@@ -35,29 +73,8 @@ function Banner() {
     dotsClass: 'slick-dots custom-dots'
   }
 
-  // Danh sách link ảnh Banner với text overlay
-  const bannerSlides = [
-    {
-      img: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=1600&q=80',
-      title: 'Khám Phá Điện Thoại Mới Nhất',
-      description: 'Công nghệ tiên tiến, thiết kế sang trọng. Mua ngay hôm nay!'
-    },
-    {
-      img: 'https://images.unsplash.com/photo-1556656793-08538906a9f8?auto=format&fit=crop&w=1600&q=80',
-      title: 'Ưu Đãi Đặc Biệt Cho Bạn',
-      description: 'Giảm giá lên đến 50% cho các mẫu flagship.'
-    },
-    {
-      img: 'https://images.unsplash.com/photo-1593642632823-8f785ba67e45?auto=format&fit=crop&w=1600&q=80',
-      title: 'Trải Nghiệm Màn Hình Siêu Sắc Nét',
-      description: 'OLED 4K, màu sắc sống động như thật.'
-    }
-  ]
-
-  const [imageErrors, setImageErrors] = useState({})
-
-  const handleImageError = (index) => {
-    setImageErrors(prev => ({ ...prev, [index]: true }))
+  const handleImageError = (id) => {
+    setImageErrors(prev => ({ ...prev, [id]: true }))
   }
 
   return (
@@ -78,10 +95,10 @@ function Banner() {
             {/* Ảnh nền */}
             <Box
               component="img"
-              src={imageErrors[index] ? '/path/to/fallback-image.jpg' : slide.img}
+              src={imageErrors[slide._id] ? '/path/to/fallback-image.jpg' : slide.image}
               alt={`Banner slide ${index + 1}: ${slide.title}`}
               loading="lazy"
-              onError={() => handleImageError(index)}
+              onError={() => handleImageError(slide._id)}
               sx={{
                 width: '100%',
                 height: { xs: '250px', sm: '350px', md: '500px' },
@@ -132,7 +149,7 @@ function Banner() {
                   maxWidth: '600px'
                 }}
               >
-                {slide.description}
+                {slide.subtitle}
               </Typography>
             </Box>
           </Box>

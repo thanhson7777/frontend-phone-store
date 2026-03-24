@@ -1,12 +1,12 @@
-import { Box } from '@mui/material'
-import Banner from '~/components/Banner/Banner'
-import TrustBadges from '~/components/HomePage/TrustBadges'
-import FlashSale from '~/components/HomePage/FlashSale'
-import CategoryGrid from '~/components/HomePage/CategoryGrid'
-import FeaturedProducts from '~/components/HomePage/FeaturedProducts'
-import BrandCarousel from '~/components/HomePage/BrandCarousel'
-import ProductList from '~/components/Product/ProductList'
-import Newsletter from '~/components/HomePage/Newsletter'
+import { Box } from "@mui/material";
+import Banner from "~/components/Banner/Banner";
+import TrustBadges from "~/components/HomePage/TrustBadges";
+import ArticleSection from "~/components/HomePage/ArticleSection";
+import CategoryGrid from "~/components/HomePage/CategoryGrid";
+import FeaturedProducts from "~/components/HomePage/FeaturedProducts";
+import BrandCarousel from "~/components/HomePage/BrandCarousel";
+import ProductList from "~/components/Product/ProductList";
+import Newsletter from "~/components/HomePage/Newsletter";
 
 function HomePage() {
   return (
@@ -17,8 +17,8 @@ function HomePage() {
       {/* Trust Badges - Cam kết mua sắm */}
       <TrustBadges />
 
-      {/* Flash Sale - Khuyến mãi */}
-      <FlashSale />
+      {/* Tin & bài viết */}
+      <ArticleSection />
 
       {/* Category Grid - Danh mục nổi bật */}
       <CategoryGrid />
@@ -37,7 +37,7 @@ function HomePage() {
       {/* Newsletter - Đăng ký nhận tin */}
       <Newsletter />
     </Box>
-  )
+  );
 }
 
-export default HomePage
+export default HomePage;
