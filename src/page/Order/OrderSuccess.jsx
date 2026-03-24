@@ -60,7 +60,7 @@ function OrderSuccess() {
 
           <Button
             component={Link}
-            to="/user/orders" // Đường dẫn tới trang Quản lý đơn hàng của User
+            to="/order-history" // Đường dẫn tới trang Quản lý đơn hàng của User
             variant="contained"
             color="error"
             size="large"

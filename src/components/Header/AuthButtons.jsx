@@ -55,7 +55,7 @@ function AuthButtons() {
           transformOrigin={{ horizontal: 'right', vertical: 'top' }}
           anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         >
-          <MenuItem component={Link} to="/profile">
+          <MenuItem component={Link} to="/profile/account">
             <ListItemIcon><PersonIcon fontSize="small" /></ListItemIcon>
             Trang cá nhân
           </MenuItem>

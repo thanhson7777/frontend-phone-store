@@ -176,6 +176,21 @@ function LoginForm() {
             />
             <FieldErrorAlert errors={errors} fieldName={'password'} />
 
+            {/* Link Quên mật khẩu */}
+            <Box sx={{ textAlign: 'right', mt: 1 }}>
+              <Link
+                to="/forgot-password"
+                style={{
+                  textDecoration: 'none',
+                  color: theme.palette.error.main,
+                  fontSize: '0.875rem',
+                  fontWeight: 500
+                }}
+              >
+                Quên mật khẩu?
+              </Link>
+            </Box>
+
             {/* Nút Submit - Thêm gradient và hiệu ứng */}
             <Button
               type="submit"

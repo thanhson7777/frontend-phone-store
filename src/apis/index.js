@@ -20,9 +20,19 @@ export const refreshTokenAPI = async () => {
   return response.data
 }
 
+export const forgotPasswordAPI = async (email) => {
+  const response = await authorizeAxiosInstance.post(`${API_ROOT}/v1/users/forgot_password`, { email })
+  return response.data
+}
+
+export const resetPasswordAPI = async (token, newPassword) => {
+  const response = await authorizeAxiosInstance.post(`${API_ROOT}/v1/users/reset_password`, { token, newPassword })
+  return response.data
+}
+
 // category
-export const getCategoryAPI = async () => {
-  const response = await authorizeAxiosInstance.get(`${API_ROOT}/v1/categories`)
+export const getCategoryAPI = async (params = {}) => {
+  const response = await authorizeAxiosInstance.get(`${API_ROOT}/v1/categories`, { params })
   return response.data
 }
 
@@ -32,12 +42,18 @@ export const getCategoryDetailsAPI = async (categoryId) => {
 }
 
 // product
-export const getProductsAPI = async () => {
-  const response = await authorizeAxiosInstance.get(`${API_ROOT}/v1/products`)
+export const getProductsAPI = async (params = {}) => {
+  const response = await authorizeAxiosInstance.get(`${API_ROOT}/v1/products`, { params })
   return response.data
 }
 export const getProductDetailAPI = async (productId) => {
   const response = await authorizeAxiosInstance.get(`${API_ROOT}/v1/products/${productId}`)
+  return response.data
+}
+
+// review
+export const getProductReviewsAPI = async (productId, params = {}) => {
+  const response = await authorizeAxiosInstance.get(`${API_ROOT}/v1/reviews/product/${productId}`, { params })
   return response.data
 }
 

@@ -1,6 +1,8 @@
 import { Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import Auth from '~/page/Auth/Auth'
 import AccountVerifycation from '~/page/Auth/VerifyAccount'
+import ForgotPassword from '~/page/Auth/ForgotPassword'
+import ResetPassword from '~/page/Auth/ResetPassword'
 
 import MainLayout from '~/components/MainLayout/MainLayout'
 import HomePage from '~/page/HomePage'
@@ -64,6 +66,8 @@ function App() {
       <Route path="/login" element={<Auth />} />
       <Route path="/register" element={<Auth />} />
       <Route path="/account/verification" element={<AccountVerifycation />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 
       {/* Tuyến đường bắt lỗi 404 */}
       <Route path="*" element={<h1>404 - Không tìm thấy trang này fen ơi!</h1>} />

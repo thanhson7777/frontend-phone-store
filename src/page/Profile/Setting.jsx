@@ -144,7 +144,7 @@ function SecurityTab() {
                 variant="contained"
                 color="primary"
                 fullWidth>
-                Change
+                Lưu thay đổi
               </Button>
             </Box>
           </Box>

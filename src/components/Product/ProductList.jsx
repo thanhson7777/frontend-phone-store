@@ -1,62 +1,282 @@
-import { Box, Typography, Grid } from '@mui/material'
+import { Box, Typography, Grid, Select, MenuItem, FormControl, InputLabel, Pagination, Stack } from '@mui/material'
 import ProductCard from './ProductCard'
 import { useState, useEffect } from 'react'
-import PageLoadingSpinner from '../Loading/PageLoadingSpinner'
-import { getProductsAPI } from '~/apis'
-
-// Dữ liệu giả định để vẽ UI (Sau này khúc này sẽ được thay bằng hàm gọi API)
-// const mockProducts = [
-//   { _id: 'p1', name: 'iPhone 15 Pro Max 256GB Titan Tự Nhiên', price: 29500000, rating: 5, reviews: 342, image: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?auto=format&fit=crop&w=500&q=80' },
-//   { _id: 'p2', name: 'Samsung Galaxy S24 Ultra 12GB/256GB', price: 31990000, rating: 4.5, reviews: 128, image: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=500&q=80' },
-//   { _id: 'p3', name: 'Xiaomi 14 Pro 5G Leica Camera', price: 21500000, rating: 4, reviews: 56, image: 'https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=500&q=80' },
-//   { _id: 'p4', name: 'OPPO Find N3 Flip Hồng Cánh Sen', price: 22990000, rating: 4.5, reviews: 89, image: 'https://images.unsplash.com/photo-1556656793-08538906a9f8?auto=format&fit=crop&w=500&q=80' },
-//   { _id: 'p5', name: 'iPhone 14 Pro 128GB Chính hãng VN/A', price: 23500000, rating: 4.8, reviews: 512, image: 'https://images.unsplash.com/photo-1678652733289-40c26284de31?auto=format&fit=crop&w=500&q=80' },
-//   { _id: 'p6', name: 'Vivo X100 Pro Đen Vũ Trụ', price: 19990000, rating: 4, reviews: 22, image: 'https://images.unsplash.com/photo-1593642632823-8f785ba67e45?auto=format&fit=crop&w=500&q=80' },
-// ]
+import { getProductsAPI, getCategoryAPI } from '~/apis'
+import { useSearchParams } from 'react-router-dom'
+import FilterListIcon from '@mui/icons-material/FilterList'
 
 function ProductList() {
+  const [searchParams, setSearchParams] = useSearchParams()
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
+  const [categories, setCategories] = useState([])
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalRecords: 0,
+    limit: 12
+  })
+
+  const [filters, setFilters] = useState({
+    search: searchParams.get('search') || '',
+    categoryId: searchParams.get('categoryId') || '',
+    brand: searchParams.get('brand') || '',
+    minPrice: searchParams.get('minPrice') || '',
+    maxPrice: searchParams.get('maxPrice') || '',
+    sortBy: searchParams.get('sortBy') || 'createdAt_desc'
+  })
 
   useEffect(() => {
-    getProductsAPI()
+    getCategoryAPI()
       .then((res) => {
-        // console.log('res', res)
-        // console.log('res.products', res.products)
-        setProducts(res.products || [])
+        setCategories(res?.categories || res || [])
       })
-      .catch((err) => { console.log('Loi o product: ', err) })
-      .finally(() => setLoading(false))
+      .catch((err) => { console.log('Lỗi ở category: ', err) })
   }, [])
 
-  // if (loading) {
-  //   return <PageLoadingSpinner caption="Đang tải sản phẩm..." />
-  // }
+  useEffect(() => {
+    const params = {}
+    if (filters.search) params.search = filters.search
+    if (filters.categoryId) params.categoryId = filters.categoryId
+    if (filters.brand) params.brand = filters.brand
+    if (filters.minPrice) params.minPrice = filters.minPrice
+    if (filters.maxPrice) params.maxPrice = filters.maxPrice
+    if (filters.sortBy) params.sortBy = filters.sortBy
+    params.page = pagination.currentPage
+    params.itemsPerPage = pagination.limit
+
+    setLoading(true)
+    getProductsAPI(params)
+      .then((res) => {
+        setProducts(res.products || [])
+        if (res.pagination) {
+          setPagination(prev => ({
+            ...prev,
+            currentPage: res.pagination.currentPage || 1,
+            totalPages: res.pagination.totalPages || 1,
+            totalRecords: res.pagination.totalRecords || 0
+          }))
+        }
+      })
+      .catch((err) => { console.log('Lỗi ở product: ', err) })
+      .finally(() => setLoading(false))
+  }, [filters, pagination.currentPage])
+
+  const handleFilterChange = (key, value) => {
+    setFilters(prev => ({ ...prev, [key]: value }))
+    setPagination(prev => ({ ...prev, currentPage: 1 }))
+  }
+
+  const handleSearch = (e) => {
+    e.preventDefault()
+    const searchValue = e.target.search.value
+    handleFilterChange('search', searchValue)
+  }
+
+  const handlePageChange = (event, page) => {
+    setPagination(prev => ({ ...prev, currentPage: page }))
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const handleClearFilters = () => {
+    setFilters({
+      search: '',
+      categoryId: '',
+      brand: '',
+      minPrice: '',
+      maxPrice: '',
+      sortBy: 'createdAt_desc'
+    })
+    setPagination(prev => ({ ...prev, currentPage: 1 }))
+  }
+
+  const hasActiveFilters = filters.search || filters.categoryId || filters.brand || filters.minPrice || filters.maxPrice
 
   return (
     <Box sx={{ my: 4 }}>
       {/* Tiêu đề danh sách */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', mb: 3 }}>
         <Typography variant="h5" sx={{ fontWeight: 'bold', textTransform: 'uppercase', borderBottom: '3px solid #d32f2f', display: 'inline-block', pb: 0.5 }}>
-          🔥 Điện Thoại Nổi Bật
+          {filters.search ? `Kết quả tìm kiếm: "${filters.search}"` : 'Điện Thoại Nổi Bật'}
         </Typography>
-        <Typography variant="body2" color="error.main" sx={{ cursor: 'pointer', fontWeight: 'bold', '&:hover': { textDecoration: 'underline' } }}>
-          Xem tất cả {'>'}
+        <Typography variant="body2" color="text.secondary">
+          {pagination.totalRecords} sản phẩm
         </Typography>
       </Box>
 
-      {/* Lưới sản phẩm (Grid System) */}
-      <Grid container spacing={3}>
-        {products?.map((product) => (
-          // xs=12 (Mobile: 1 cột), sm=6 (Tablet nhỏ: 2 cột), md=4 (Tablet lớn: 3 cột), lg=3 (PC: 4 cột)
-          <Grid item xs={12} sm={6} md={4} lg={3} key={product._id}>
+      {/* Bộ lọc */}
+      <Box sx={{ mb: 3, p: 2, bgcolor: '#f8f9fa', borderRadius: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+          <FilterListIcon color="error" />
+          <Typography variant="subtitle1" fontWeight="bold">Bộ lọc</Typography>
+          {hasActiveFilters && (
+            <Typography
+              variant="body2"
+              color="error"
+              sx={{ cursor: 'pointer', ml: 'auto', '&:hover': { textDecoration: 'underline' } }}
+              onClick={handleClearFilters}
+            >
+              Xóa bộ lọc
+            </Typography>
+          )}
+        </Box>
 
-            {/* Đẩy cục data xuống cho thằng con ProductCard hiển thị */}
-            <ProductCard product={product} />
-
+        <Grid container spacing={2} alignItems="center">
+          {/* Tìm kiếm */}
+          <Grid item xs={12} md={3}>
+            <form onSubmit={handleSearch}>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <input
+                  name="search"
+                  placeholder="Tìm theo tên..."
+                  defaultValue={filters.search}
+                  style={{
+                    flex: 1,
+                    padding: '8px 12px',
+                    border: '1px solid #ddd',
+                    borderRadius: '4px',
+                    fontSize: '14px'
+                  }}
+                />
+                <button
+                  type="submit"
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: '#d32f2f',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  Tìm
+                </button>
+              </Box>
+            </form>
           </Grid>
-        ))}
-      </Grid>
+
+          {/* Danh mục */}
+          <Grid item xs={6} md={2}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Danh mục</InputLabel>
+              <Select
+                value={filters.categoryId}
+                label="Danh mục"
+                onChange={(e) => handleFilterChange('categoryId', e.target.value)}
+              >
+                <MenuItem value="">Tất cả</MenuItem>
+                {(categories?.categories || categories || []).map(cat => (
+                  <MenuItem key={cat._id} value={cat._id}>{cat.name}</MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+
+          {/* Sắp xếp */}
+          <Grid item xs={6} md={3}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Sắp xếp theo</InputLabel>
+              <Select
+                value={filters.sortBy}
+                label="Sắp xếp theo"
+                onChange={(e) => handleFilterChange('sortBy', e.target.value)}
+              >
+                <MenuItem value="createdAt_desc">Mới nhất</MenuItem>
+                <MenuItem value="createdAt_asc">Cũ nhất</MenuItem>
+                <MenuItem value="price_asc">Giá: Thấp đến Cao</MenuItem>
+                <MenuItem value="price_desc">Giá: Cao đến Thấp</MenuItem>
+                <MenuItem value="name">Tên A-Z</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+
+          {/* Khoảng giá */}
+          <Grid item xs={12} md={4}>
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+              <input
+                type="number"
+                placeholder="Giá từ"
+                value={filters.minPrice}
+                onChange={(e) => handleFilterChange('minPrice', e.target.value)}
+                style={{
+                  width: '100px',
+                  padding: '8px 12px',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  fontSize: '14px'
+                }}
+              />
+              <Typography>-</Typography>
+              <input
+                type="number"
+                placeholder="đến"
+                value={filters.maxPrice}
+                onChange={(e) => handleFilterChange('maxPrice', e.target.value)}
+                style={{
+                  width: '100px',
+                  padding: '8px 12px',
+                  border: '1px solid #ddd',
+                  borderRadius: '4px',
+                  fontSize: '14px'
+                }}
+              />
+              <Typography variant="body2" color="text.secondary">VNĐ</Typography>
+            </Box>
+          </Grid>
+        </Grid>
+      </Box>
+
+      {/* Lưới sản phẩm (Grid System) */}
+      {loading ? (
+        <Box sx={{ textAlign: 'center', py: 8 }}>
+          <Typography>Đang tải sản phẩm...</Typography>
+        </Box>
+      ) : products.length === 0 ? (
+        <Box sx={{ textAlign: 'center', py: 8, bgcolor: '#f8f9fa', borderRadius: 2 }}>
+          <Typography variant="h6" color="text.secondary">
+            Không tìm thấy sản phẩm nào
+          </Typography>
+          {hasActiveFilters && (
+            <Typography
+              variant="body2"
+              color="error"
+              sx={{ cursor: 'pointer', mt: 2, '&:hover': { textDecoration: 'underline' } }}
+              onClick={handleClearFilters}
+            >
+              Xóa bộ lọc và thử lại
+            </Typography>
+          )}
+        </Box>
+      ) : (
+        <>
+          <Grid container spacing={3}>
+            {products.map((product) => (
+              <Grid item xs={12} sm={6} md={4} lg={3} key={product._id}>
+                <ProductCard product={product} />
+              </Grid>
+            ))}
+          </Grid>
+
+          {/* Phân trang */}
+          {pagination.totalPages > 1 && (
+            <Stack spacing={2} sx={{ mt: 4, alignItems: 'center' }}>
+              <Pagination
+                count={pagination.totalPages}
+                page={pagination.currentPage}
+                onChange={handlePageChange}
+                color="error"
+                size="large"
+                showFirstButton
+                showLastButton
+              />
+              <Typography variant="body2" color="text.secondary">
+                Trang {pagination.currentPage} / {pagination.totalPages}
+              </Typography>
+            </Stack>
+          )}
+        </>
+      )}
     </Box>
   )
 }

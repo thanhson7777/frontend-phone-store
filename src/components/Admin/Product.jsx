@@ -290,6 +290,7 @@ function Product() {
                     <Stack direction="row" spacing={2} sx={{ mt: 2 }} key={v.id || i}>
                       <TextField size="small" label="Mã SKU" value={v.sku} onChange={(e) => handleVariantChange(v.id, 'sku', e.target.value)} />
                       <TextField size="small" label="Màu sắc" value={v.color} onChange={(e) => handleVariantChange(v.id, 'color', e.target.value)} />
+                      <TextField size="small" label="Bộ nhớ" value={v.storage} onChange={(e) => handleVariantChange(v.id, 'storage', e.target.value)} />
                       <TextField size="small" type="number" label="Giá" value={v.price} onChange={(e) => handleVariantChange(v.id, 'price', e.target.value)} />
                       <IconButton color="error" onClick={() => handleRemoveVariant(v.id)}><DeleteOutlineIcon /></IconButton>
                     </Stack>

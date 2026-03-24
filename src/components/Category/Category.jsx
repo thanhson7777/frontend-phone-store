@@ -12,7 +12,9 @@ function CategoryList() {
   useEffect(() => {
     getCategoryAPI()
       .then((res) => {
-        setCategories(res || [])
+        // Xử lý cả 2 format: array trực tiếp hoặc có pagination { categories: [] }
+        const categoriesData = res?.categories || res || []
+        setCategories(Array.isArray(categoriesData) ? categoriesData : [])
       })
       .catch((err) => { console.log('Lỗi ở category: ', err) })
       .finally(() => setLoading(false))

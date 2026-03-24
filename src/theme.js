@@ -1,13 +1,10 @@
 import { experimental_extendTheme as extendTheme } from '@mui/material/styles'
 import { cyan, deepOrange, orange, teal, red } from '@mui/material/colors'
 
-// Tự định nghĩa một vài biến kích thước dùng chung cho toàn dự án
 const APP_BAR_HEIGHT = '64px'
 const BOARD_CONTENT_HEIGHT = `calc(100vh - ${APP_BAR_HEIGHT})`
 
-// Create a theme instance.
 const theme = extendTheme({
-  // Custom biến của riêng bạn để dễ gọi lại trong component
   storeCustomVars: {
     appBarHeight: APP_BAR_HEIGHT,
     boardContentHeight: BOARD_CONTENT_HEIGHT
